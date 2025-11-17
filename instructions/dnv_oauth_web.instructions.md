@@ -1,6 +1,6 @@
 ---
 description: 'Comprehensive usage instructions for DNV.OAuth.Web package - OpenID Connect and JWT authentication for ASP.NET Core web applications'
-applyTo: '**/OAuth/Web/**/*.cs'
+applyTo: '**/*.csproj, **/*.cs'
 ---
 
 # DNV.OAuth.Web Authentication Package
