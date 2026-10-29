@@ -1,0 +1,23 @@
+@api = http://localhost:5002
+@receiver = http://localhost:5100
+
+### What this sample exposes
+GET {{api}}/
+
+### Place an order - the order row and the outbox row are saved by one SaveChangesAsync
+POST {{api}}/orders
+Content-Type: application/json
+
+{ "tenantId": "acme", "customerId": "cust-1", "total": 99.50 }
+
+### What the receiver got
+GET {{receiver}}/deliveries
+
+### Summary: total vs distinct outbox ids
+GET {{receiver}}/deliveries/summary
+
+### The manual baseline script, for adopting an outbox table EF did not create
+GET {{api}}/baseline-script
+
+### Reset the receiver
+DELETE {{receiver}}/deliveries

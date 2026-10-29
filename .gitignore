@@ -6,3 +6,4 @@ docs/api/
 **/bin/
 **/obj/
 **/.dapr
+/docs/superpowers

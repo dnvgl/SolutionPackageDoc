@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.SqlServerHttp</RootNamespace>
+    <AssemblyName>Outbox.Samples.SqlServerHttp</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\SqlServer\DNV.Outbox.SqlServer.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Http\DNV.Outbox.Http.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

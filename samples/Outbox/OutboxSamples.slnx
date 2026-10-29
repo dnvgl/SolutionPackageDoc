@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/shared/">
+    <Project Path="shared/Outbox.Samples.Domain/Outbox.Samples.Domain.csproj" />
+    <Project Path="shared/Outbox.Samples.Receiver/Outbox.Samples.Receiver.csproj" />
+  </Folder>
+  <Project Path="01-SqlServer-Http/01-SqlServer-Http.csproj" />
+  <Project Path="02-EntityFrameworkCore/02-EntityFrameworkCore.csproj" />
+</Solution>

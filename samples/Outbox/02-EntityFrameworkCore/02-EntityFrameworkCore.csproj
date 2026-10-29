@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.EntityFrameworkCore</RootNamespace>
+    <AssemblyName>Outbox.Samples.EntityFrameworkCore</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    Versions are taken from the net10.0 group of SolutionPackage/src/Directory.Packages.props.
+    This samples tree has no central package management, so they are pinned explicitly here.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\SqlServer\DNV.Outbox.SqlServer.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\EntityFrameworkCore\DNV.Outbox.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Http\DNV.Outbox.Http.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

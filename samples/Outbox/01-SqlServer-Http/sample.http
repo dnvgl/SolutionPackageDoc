@@ -1,0 +1,17 @@
+@api = http://localhost:5001
+@receiver = http://localhost:5100
+
+### Place an order — business row and outbox row commit together
+POST {{api}}/orders
+Content-Type: application/json
+
+{ "tenantId": "acme", "customerId": "cust-1", "total": 99.50 }
+
+### What the receiver got
+GET {{receiver}}/deliveries
+
+### Summary: total vs distinct outbox ids
+GET {{receiver}}/deliveries/summary
+
+### Reset the receiver
+DELETE {{receiver}}/deliveries
