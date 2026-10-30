@@ -3,3 +3,6 @@ obj/
 *.user
 .dapr/
 *.log
+
+# Written by sample 03's custom file destination.
+audit/

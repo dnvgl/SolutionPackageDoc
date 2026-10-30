@@ -1,0 +1,42 @@
+### Sample 03 — multiple destinations
+### The API runs on 5113; the two receivers on 5111 and 5112.
+
+@api = http://localhost:5113
+@receiverA = http://localhost:5111
+@receiverB = http://localhost:5112
+
+### The sample's index — what this app exposes
+GET {{api}}/
+
+### The registered destinations and the transport serving each one
+GET {{api}}/destinations
+
+### Place an order. One event, three destinations, three outbox ids.
+POST {{api}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-1",
+  "total": 99.50
+}
+
+### What receiver A got
+GET {{receiverA}}/deliveries
+
+### What receiver B got
+GET {{receiverB}}/deliveries
+
+### Counts only, if the full bodies are noisy
+GET {{receiverA}}/deliveries/summary
+
+###
+GET {{receiverB}}/deliveries/summary
+
+### The third destination writes files instead — look in 03-MultipleDestinations/audit.
+
+### Clear both receivers between experiments
+DELETE {{receiverA}}/deliveries
+
+###
+DELETE {{receiverB}}/deliveries

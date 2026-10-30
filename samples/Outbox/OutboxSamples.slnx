@@ -5,4 +5,5 @@
   </Folder>
   <Project Path="01-SqlServer-Http/01-SqlServer-Http.csproj" />
   <Project Path="02-EntityFrameworkCore/02-EntityFrameworkCore.csproj" />
+  <Project Path="03-MultipleDestinations/03-MultipleDestinations.csproj" />
 </Solution>
