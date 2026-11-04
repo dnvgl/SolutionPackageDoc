@@ -1,0 +1,82 @@
+### Sample 04 — retry, dead-letter and requeue
+### The API runs on 5004; the shared receiver on 5100.
+
+@api = http://localhost:5004
+@receiver = http://localhost:5100
+
+### The sample's index
+GET {{api}}/
+
+### ---------------------------------------------------------------------------
+### Phase 1 — survivable failure. MaxAttempts is 4, so three rejections recover.
+### ---------------------------------------------------------------------------
+
+### Clear the receiver first: DELETE also resets the failure budget.
+DELETE {{receiver}}/deliveries
+
+### Now set the budget.
+POST {{receiver}}/fail-next/3
+
+### Place an order. Copy the outboxId from the response into the requests below.
+POST {{api}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-retry",
+  "total": 42.00
+}
+
+### Inspect the record. Run it repeatedly to watch Failed -> Delivered and the
+### attempt count climb. nextAttemptAt is when the dispatcher may try again.
+GET {{api}}/outbox/00000000-0000-0000-0000-000000000000
+
+### Four attempts, one record: distinctOutboxIds must be 1.
+GET {{receiver}}/deliveries/summary
+
+### ---------------------------------------------------------------------------
+### Phase 2 — unsurvivable failure. More rejections than attempts.
+### ---------------------------------------------------------------------------
+
+###
+DELETE {{receiver}}/deliveries
+
+###
+POST {{receiver}}/fail-next/50
+
+###
+POST {{api}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-deadletter",
+  "total": 42.00
+}
+
+### The operator's queue. LastError says why each record is here.
+GET {{api}}/outbox/dead-lettered
+
+### Aggregate counters, which the health check is built on.
+GET {{api}}/outbox/stats
+
+### Degraded while a dead letter exists - but still HTTP 200, because the
+### service itself is working.
+GET {{api}}/health/outbox
+
+### ---------------------------------------------------------------------------
+### Phase 3 — recovery.
+### ---------------------------------------------------------------------------
+
+### Clears the forced-failure budget, so this time the receiver accepts.
+DELETE {{receiver}}/deliveries
+
+### Replay it. Both identifiers are preserved, so the replay is idempotent for a
+### consumer that deduplicates. Returns 409 if the record is not dead-lettered.
+POST {{api}}/outbox/00000000-0000-0000-0000-000000000000/requeue
+
+### Delivered, with the original outboxId and eventId, attemptCount back at 1.
+GET {{api}}/outbox/00000000-0000-0000-0000-000000000000
+
+### Empty again.
+GET {{api}}/outbox/dead-lettered
