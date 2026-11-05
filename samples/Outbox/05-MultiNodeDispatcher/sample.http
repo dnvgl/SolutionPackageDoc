@@ -1,0 +1,96 @@
+### Sample 05 — many dispatcher nodes, one outbox table
+### Start everything with .\run-nodes.ps1 first.
+### Nodes run on 5005, 5006 and 5007; the shared receiver on 5100.
+
+@node1 = http://localhost:5005
+@node2 = http://localhost:5006
+@node3 = http://localhost:5007
+@receiver = http://localhost:5100
+
+### ---------------------------------------------------------------------------
+### The nodes are identical apart from their identity.
+### ---------------------------------------------------------------------------
+
+### Each index reports which node answered.
+GET {{node1}}/
+
+###
+GET {{node2}}/
+
+###
+GET {{node3}}/
+
+### ---------------------------------------------------------------------------
+### Place work on ONE node, and watch all three dispatch it.
+### ---------------------------------------------------------------------------
+
+### Start from a clean tally.
+DELETE {{receiver}}/deliveries
+
+### acceptedBy is node-1. It is routinely NOT the node that dispatches it.
+POST {{node1}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-demo",
+  "total": 99.50
+}
+
+### Send a few more, then watch the three node windows interleave.
+POST {{node1}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-2",
+  "total": 10.00
+}
+
+###
+POST {{node1}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-3",
+  "total": 20.00
+}
+
+### The assertion that matters: total must equal distinctOutboxIds.
+### Anything else means a record went out twice.
+GET {{receiver}}/deliveries/summary
+
+### Everything received, with the attempt header on each.
+GET {{receiver}}/deliveries
+
+### ---------------------------------------------------------------------------
+### One table, three replicas.
+### ---------------------------------------------------------------------------
+
+### Identical counters from every node, because there is only one table.
+GET {{node1}}/outbox/stats
+
+###
+GET {{node2}}/outbox/stats
+
+###
+GET {{node3}}/outbox/stats
+
+### ---------------------------------------------------------------------------
+### Try this: close one node's window, then send more orders.
+### The survivors absorb the backlog. total still equals distinctOutboxIds.
+### ---------------------------------------------------------------------------
+
+###
+POST {{node2}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-after-a-node-died",
+  "total": 5.00
+}
+
+###
+GET {{receiver}}/deliveries/summary

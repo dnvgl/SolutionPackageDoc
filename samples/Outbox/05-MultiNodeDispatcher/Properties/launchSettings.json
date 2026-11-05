@@ -1,0 +1,31 @@
+{
+  "profiles": {
+    "node-1": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5005",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OUTBOX__NODEID": "node-1"
+      }
+    },
+    "node-2": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5006",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OUTBOX__NODEID": "node-2"
+      }
+    },
+    "node-3": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5007",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "OUTBOX__NODEID": "node-3"
+      }
+    }
+  }
+}

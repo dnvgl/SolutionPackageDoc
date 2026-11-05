@@ -69,6 +69,17 @@ function Assert-PortFree([int] $Port, [string] $Role) {
     }
 }
 
+# Reads a JSON array endpoint and enumerates it properly.
+#
+# Invoke-RestMethod writes a JSON array to the pipeline as ONE object rather than enumerating it.
+# Piping it straight into Where-Object therefore filters NOTHING: `$_.outboxId -eq $id` evaluates
+# against the whole array, returns a non-empty (truthy) array, and the entire collection sails
+# through as a single item. Materialising the response first is what makes the filters real.
+function Get-Collection([string] $Url) {
+    $response = Invoke-RestMethod -NoProxy -Uri $Url
+    return @($response)
+}
+
 # Polls until $Condition returns true, then returns the last value produced by $Produce.
 function Wait-For([scriptblock] $Produce, [scriptblock] $Condition, [int] $TimeoutSeconds, [string] $Description) {
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
@@ -131,7 +142,7 @@ try {
     $retriedOutboxId = $retried.outboxIds[0]
 
     $attempts = Wait-For `
-        -Produce { @(Invoke-RestMethod -NoProxy -Uri "$receiver/deliveries" | Where-Object { $_.outboxId -eq $retriedOutboxId }) } `
+        -Produce { @(Get-Collection "$receiver/deliveries" | Where-Object { $_.outboxId -eq $retriedOutboxId }) } `
         -Condition { param($a) $a.Count -ge $maxAttempts } `
         -TimeoutSeconds 90 `
         -Description "$maxAttempts attempts of outbox $retriedOutboxId (3 rejected, 1 accepted)"
@@ -183,7 +194,7 @@ try {
     $doomedOutboxId = $doomed.outboxIds[0]
 
     $deadLettered = Wait-For `
-        -Produce { @(Invoke-RestMethod -NoProxy -Uri "$api/outbox/dead-lettered" | Where-Object { $_.outboxId -eq $doomedOutboxId }) } `
+        -Produce { @(Get-Collection "$api/outbox/dead-lettered" | Where-Object { $_.outboxId -eq $doomedOutboxId }) } `
         -Condition { param($d) $d.Count -eq 1 } `
         -TimeoutSeconds 120 `
         -Description "outbox $doomedOutboxId to be dead-lettered"
@@ -196,9 +207,9 @@ try {
     }
 
     # It must STAY dead. A terminal record is invisible to the dispatcher.
-    $before = @(Invoke-RestMethod -NoProxy -Uri "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }).Count
+    $before = @(Get-Collection "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }).Count
     Start-Sleep -Seconds 10
-    $after = @(Invoke-RestMethod -NoProxy -Uri "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }).Count
+    $after = @(Get-Collection "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }).Count
     if ($after -ne $before) {
         throw "A dead-lettered record is still being retried: attempts went from $before to $after. Dead-lettering must stop the dispatcher from picking it up."
     }
@@ -217,7 +228,7 @@ try {
     Invoke-RestMethod -Method Post -NoProxy -Uri "$api/outbox/$doomedOutboxId/requeue" | Out-Null
 
     $replayed = Wait-For `
-        -Produce { @(Invoke-RestMethod -NoProxy -Uri "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }) } `
+        -Produce { @(Get-Collection "$receiver/deliveries" | Where-Object { $_.outboxId -eq $doomedOutboxId }) } `
         -Condition { param($d) $d.Count -ge 1 } `
         -TimeoutSeconds 60 `
         -Description "requeued outbox $doomedOutboxId to be delivered"
@@ -237,7 +248,7 @@ try {
         -TimeoutSeconds 30 `
         -Description "requeued outbox $doomedOutboxId to reach Delivered"
 
-    $stillDead = @(Invoke-RestMethod -NoProxy -Uri "$api/outbox/dead-lettered" | Where-Object { $_.outboxId -eq $doomedOutboxId })
+    $stillDead = @(Get-Collection "$api/outbox/dead-lettered" | Where-Object { $_.outboxId -eq $doomedOutboxId })
     if ($stillDead.Count -ne 0) {
         throw "Outbox $doomedOutboxId is still listed as dead-lettered after a successful requeue."
     }
