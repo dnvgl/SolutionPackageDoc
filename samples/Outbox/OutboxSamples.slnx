@@ -8,4 +8,5 @@
   <Project Path="03-MultipleDestinations/03-MultipleDestinations.csproj" />
   <Project Path="04-RetryAndDeadLetter/04-RetryAndDeadLetter.csproj" />
   <Project Path="05-MultiNodeDispatcher/05-MultiNodeDispatcher.csproj" />
+  <Project Path="06-CosmosDb/06-CosmosDb.csproj" />
 </Solution>

@@ -321,9 +321,10 @@ traffic through the proxy and hangs. `verify.ps1` passes `-NoProxy` for this rea
 in your own scripts.
 
 **`NU1903: Package 'System.Security.Cryptography.Pkcs' has a known high severity vulnerability`**
-`Microsoft.Data.SqlClient` 7.1.1 resolves a vulnerable version transitively, and these samples
-build with `TreatWarningsAsErrors`. [`Directory.Build.props`](../Directory.Build.props) pins a
-patched version.
+`Microsoft.Data.SqlClient` 7.1.1 resolves a vulnerable version transitively.
+`DNV.Outbox.SqlServer` references a patched version directly, so the samples inherit it and you
+should no longer see this. If you do, the library is out of date — see
+`SolutionPackage/src/Outbox/SqlServer/DNV.Outbox.SqlServer.csproj`.
 
 **`The DNV Outbox library was not found at '...'`**
 `SolutionPackage` is not a sibling of `SolutionPackageDoc`. Pass

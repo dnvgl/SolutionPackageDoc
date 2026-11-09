@@ -18,17 +18,9 @@
   </PropertyGroup>
 
   <!--
-    Microsoft.Data.SqlClient 7.1.1 (the latest at time of writing, pinned by the library in
-    SolutionPackage/src/Directory.Packages.props) drags in System.Security.Cryptography.Pkcs
-    9.0.18, which carries a known high-severity advisory (GHSA-846f-f764-76mx). These samples
-    build with TreatWarningsAsErrors, so NuGet audit turns that into a build error.
-
-    Pin the patched version transitively. Remove this once Microsoft.Data.SqlClient ships a
-    release that no longer resolves a vulnerable Pkcs.
+    DNV.Outbox.SqlServer references a patched System.Security.Cryptography.Pkcs directly, so the
+    samples inherit it through their project references. No workaround is needed here.
   -->
-  <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
-  </ItemGroup>
 
   <Target Name="ValidateSolutionPackageRoot" BeforeTargets="PrepareForBuild">
     <Error Condition="!Exists('$(OutboxSrc)\Core\DNV.Outbox.Core.csproj')"

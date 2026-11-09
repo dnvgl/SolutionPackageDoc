@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.CosmosDb</RootNamespace>
+    <AssemblyName>Outbox.Samples.CosmosDb</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Cosmos\DNV.Outbox.Cosmos.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Http\DNV.Outbox.Http.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      The sample owns its CosmosClient, so it references the SDK directly rather than relying on
+      the transitive reference from DNV.Outbox.Cosmos. Keep this version in step with the one the
+      library pins in SolutionPackage/src/Directory.Packages.props.
+    -->
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.63.2" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,47 @@
+@api = http://localhost:5006
+@receiver = http://localhost:5100
+@tenant = acme
+
+### What this sample is
+GET {{api}}/
+
+### Readiness - answers only once the container exists
+GET {{api}}/health
+
+### Place an order. The order document and its outbox record commit in one batch.
+POST {{api}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "{{tenant}}",
+  "customerId": "cust-1",
+  "total": 42.50
+}
+
+### Both kinds of document, in the same container. That is what makes the write transactional.
+GET {{api}}/container/{{tenant}}
+
+### The outbox records themselves, with their status
+GET {{api}}/outbox/{{tenant}}
+
+### A batch that cannot commit. Expect HTTP 409.
+POST {{api}}/orders/doomed
+Content-Type: application/json
+
+{
+  "tenantId": "{{tenant}}",
+  "customerId": "cust-doomed",
+  "total": 99.00
+}
+
+### ...and nothing was written. Re-run these two: the counts are unchanged and the order is absent.
+GET {{api}}/container/{{tenant}}
+
+### Replace the id with the orderId the doomed call reported. Expect HTTP 404.
+GET {{api}}/orders/{{tenant}}/paste-the-doomed-orderId-here
+
+### What actually arrived at the receiver
+GET {{receiver}}/deliveries
+
+### Clear the receiver between runs
+DELETE {{receiver}}/deliveries

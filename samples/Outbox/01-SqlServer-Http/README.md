@@ -238,9 +238,10 @@ The project file lost its `Microsoft.NET.Sdk.Web` SDK attribute. These samples a
 need the Web SDK, not `Microsoft.NET.Sdk`.
 
 **`NU1903: Package 'System.Security.Cryptography.Pkcs' has a known high severity vulnerability`**
-`Microsoft.Data.SqlClient` 7.1.1 resolves a vulnerable version transitively, and these samples
-build with `TreatWarningsAsErrors`. [`Directory.Build.props`](../Directory.Build.props) pins a
-patched version; remove that pin once the driver ships a release that no longer needs it.
+`Microsoft.Data.SqlClient` 7.1.1 resolves a vulnerable version transitively.
+`DNV.Outbox.SqlServer` references a patched version directly, so the samples inherit it and you
+should no longer see this. If you do, the library is out of date — see
+`SolutionPackage/src/Outbox/SqlServer/DNV.Outbox.SqlServer.csproj`.
 
 **`The DNV Outbox library was not found at '...'`**
 `SolutionPackage` is not a sibling of `SolutionPackageDoc`. Pass
