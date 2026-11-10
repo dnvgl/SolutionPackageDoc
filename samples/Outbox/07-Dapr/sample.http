@@ -1,0 +1,28 @@
+### Place an order. The row and its outbox record are committed together; nothing is published
+### inline. Note the outboxId in the response - it turns up unchanged as the CloudEvents id.
+POST http://localhost:5007/orders
+Content-Type: application/json
+
+{ "tenantId": "acme", "customerId": "cust-1", "total": 11.0 }
+
+### Inspect the outbox record. Status goes Pending -> Delivered within a second or two.
+GET http://localhost:5007/outbox/00000000-0000-0000-0000-000000000000
+
+### Aggregate counters.
+GET http://localhost:5007/outbox/stats
+
+### What the subscriber received, on the other side of the broker.
+GET http://localhost:5017/received
+
+### Clear the subscriber's record of what it has seen.
+DELETE http://localhost:5017/received
+
+### What the sidecar fetched from the subscriber at startup.
+GET http://localhost:5017/dapr/subscribe
+
+### Publish straight to the sidecar, bypassing the outbox. Useful for proving the component works
+### on its own - and for seeing what you give up: this publish is not transactional with anything.
+POST http://localhost:3507/v1.0/publish/order-pubsub/order-events
+Content-Type: application/json
+
+{ "orderId": "manual-1", "customerId": "cust-9", "total": 1.0 }

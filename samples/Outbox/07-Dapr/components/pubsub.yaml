@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  # Referenced by Dapr:PubSubName in both apps' appsettings.json. Change it in one place and the
+  # publish call gets a 404 from the sidecar.
+  name: order-pubsub
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+    # The Redis that `dapr init` already runs in the dapr_redis container. Swapping this file for
+    # a pubsub.azure.servicebus.topics component is the only change needed to move the sample onto
+    # Service Bus - neither application has a line of broker-specific code.
+    - name: redisHost
+      value: localhost:6379
+    - name: redisPassword
+      value: ""

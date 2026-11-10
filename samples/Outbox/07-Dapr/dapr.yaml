@@ -1,0 +1,28 @@
+# Dapr multi-app run file: starts both applications and both sidecars with one command.
+#
+#   dapr run -f .\dapr.yaml
+#
+# The ports here are duplicated as defaults in verify.ps1. If you change one, change the other.
+version: 1
+
+common:
+  # Component definitions are taken from this folder instead of the machine-wide
+  # %USERPROFILE%\.dapr\components, so the sample is self-contained.
+  resourcesPath: ./components
+
+apps:
+  - appID: order-publisher
+    appDirPath: ./Publisher
+    appPort: 5007
+    daprHTTPPort: 3507
+    # --no-build because verify.ps1 has already built both projects; building two apps
+    # concurrently in the same output tree is how you get a file lock instead of a sample.
+    # --no-launch-profile so the port below is the one that is actually used, rather than the one
+    # in Properties/launchSettings.json.
+    command: ["dotnet", "run", "--no-build", "--no-launch-profile", "--urls", "http://localhost:5007"]
+
+  - appID: order-subscriber
+    appDirPath: ./Subscriber
+    appPort: 5017
+    daprHTTPPort: 3517
+    command: ["dotnet", "run", "--no-build", "--no-launch-profile", "--urls", "http://localhost:5017"]

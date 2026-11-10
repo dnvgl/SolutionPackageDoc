@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.Dapr.Subscriber</RootNamespace>
+    <AssemblyName>Outbox.Samples.Dapr.Subscriber</AssemblyName>
+  </PropertyGroup>
+
+  <!--
+    No package references at all. A Dapr subscriber is a plain HTTP server: it advertises its
+    subscriptions on GET /dapr/subscribe and receives CloudEvents by POST. Dapr.AspNetCore would
+    add attribute routing sugar, nothing that is needed to show what the outbox delivers.
+  -->
+
+</Project>

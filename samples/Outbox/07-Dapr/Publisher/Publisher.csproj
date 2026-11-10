@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.Dapr.Publisher</RootNamespace>
+    <AssemblyName>Outbox.Samples.Dapr.Publisher</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\SqlServer\DNV.Outbox.SqlServer.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Dapr\DNV.Outbox.Dapr.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+
+    <!--
+      DNV.Outbox.Dapr references only DNV.Dapr.PubSub.Abstractions, so the destination can be
+      written against the contract. The concrete client - and therefore AddDaprPubSubClient - lives
+      in DNV.Dapr.PubSub, which an application has to reference itself.
+    -->
+    <ProjectReference Include="$(OutboxSrc)\..\Dapr\PubSub\DNV.Dapr.PubSub.csproj" />
+  </ItemGroup>
+
+</Project>
