@@ -22,8 +22,8 @@
 [CmdletBinding()]
 param(
     [string] $SqlServer = ($env:OUTBOX_SAMPLES_SQL ?? '.\SQLEXPRESS'),
-    [int]    $ReceiverAPort = 5101,
-    [int]    $ReceiverBPort = 5102,
+    [int]    $ReceiverAPort = 5111,
+    [int]    $ReceiverBPort = 5112,
     [int]    $ApiPort = 5003
 )
 
@@ -72,14 +72,29 @@ try {
     Assert-PortFree $ReceiverBPort 'receiver B'
     Assert-PortFree $ApiPort 'sample API'
 
-    # Dependencies this script does NOT own: probe, never start or stop.
+    # SQL Server itself is a dependency this script does NOT own: probe it, never start it.
     Write-Host 'Checking SQL Server...' -ForegroundColor Cyan
     try {
-        $connection = New-Object System.Data.SqlClient.SqlConnection $connectionString
-        $connection.Open()
-        $connection.Close()
+        # Connect to master rather than to the sample database: on a clean machine the sample
+        # database does not exist yet, and connecting to it would fail with "Cannot open database".
+        # Create it if it is missing - the outbox schema inside it is created by the sample at
+        # startup, so an empty database is all that is needed.
+        $builder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder $connectionString
+        $database = $builder.get_InitialCatalog()
+        if ($database -notmatch '^OutboxSample\d+$') { throw "Unexpected database name '$database'." }
+        $builder.set_InitialCatalog('master')
+
+        $master = New-Object System.Data.SqlClient.SqlConnection $builder.ConnectionString
+        $master.Open()
+        try {
+            $command = $master.CreateCommand()
+            $command.CommandText = "IF DB_ID('$database') IS NULL CREATE DATABASE [$database];"
+            $command.ExecuteNonQuery() | Out-Null
+        } finally {
+            $master.Close()
+        }
     } catch {
-        throw "Cannot reach SQL Server using '$connectionString'. Start SQL Server and create the database (see README Setup), or set OUTBOX_SAMPLES_SQL to a reachable instance. Underlying error: $($_.Exception.Message)"
+        throw "Cannot reach SQL Server using '$connectionString'. Start SQL Server, or set OUTBOX_SAMPLES_SQL to a reachable instance. Underlying error: $($_.Exception.Message)"
     }
 
     # The file destination appends to a directory. Start from empty so the count assertion means
@@ -108,8 +123,12 @@ try {
     Wait-ForHttp "http://localhost:$ReceiverBPort/health"
 
     Write-Host 'Starting sample API...' -ForegroundColor Cyan
+    # The destination endpoints have to follow the receiver ports, otherwise overriding a receiver
+    # port silently points the dispatcher at nothing and the only symptom is zero deliveries.
     $processes += Start-Process dotnet -PassThru -ArgumentList @(
-        'run', '--no-build', '--project', $root, '--urls', "http://localhost:$ApiPort")
+        'run', '--no-build', '--project', $root, '--urls', "http://localhost:$ApiPort",
+        '--Outbox:ReceiverAEndpoint', "http://localhost:$ReceiverAPort/events",
+        '--Outbox:ReceiverBEndpoint', "http://localhost:$ReceiverBPort/events")
     Wait-ForHttp "http://localhost:$ApiPort/health"
 
     Invoke-RestMethod -Method Delete -NoProxy -Uri "http://localhost:$ReceiverAPort/deliveries" | Out-Null

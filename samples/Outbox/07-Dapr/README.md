@@ -74,6 +74,9 @@ $server = '.\SQLEXPRESS'
 sqlcmd -S $server -Q "IF DB_ID('OutboxSample07') IS NULL CREATE DATABASE OutboxSample07;"
 ```
 
+The `verify.ps1` smoke test creates this database itself if it is missing, so this step is only
+needed when running the sample by hand.
+
 The outbox schema itself is created by the publisher on startup — no migration step.
 
 Make sure Redis is up:

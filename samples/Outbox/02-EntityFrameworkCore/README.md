@@ -64,6 +64,9 @@ $server = $env:OUTBOX_SAMPLES_SQL ?? '.\SQLEXPRESS'
 sqlcmd -S $server -Q "IF DB_ID('OutboxSample02') IS NULL CREATE DATABASE OutboxSample02;"
 ```
 
+The `verify.ps1` smoke test creates this database itself if it is missing, so this step is only
+needed when running the sample by hand.
+
 If your instance is not `.\SQLEXPRESS`, set `OUTBOX_SAMPLES_SQL` to its name and update
 `ConnectionStrings:Sales` in [`appsettings.json`](appsettings.json). `verify.ps1` reads the same
 environment variable, so set it once and both agree.

@@ -35,7 +35,7 @@ enqueue looks like.
 The `SolutionPackage` repository must sit next to `SolutionPackageDoc`. If it does not, pass
 `-p:SolutionPackageRoot=<path>` to `dotnet build`.
 
-Ports **5003** (this sample), **5101** and **5102** (the two receivers) must be free. All three
+Ports **5003** (this sample), **5111** and **5112** (the two receivers) must be free. All three
 are overridable — see [Run](#5-run).
 
 ## 3. Cost
@@ -50,6 +50,9 @@ Create the database. Tables are created by the application on startup.
 $server = $env:OUTBOX_SAMPLES_SQL ?? '.\SQLEXPRESS'
 sqlcmd -S $server -Q "IF DB_ID('OutboxSample03') IS NULL CREATE DATABASE OutboxSample03;"
 ```
+
+The `verify.ps1` smoke test creates this database itself if it is missing, so this step is only
+needed when running the sample by hand.
 
 If your instance is not `.\SQLEXPRESS`, set `OUTBOX_SAMPLES_SQL` and update
 `ConnectionStrings:Sales` in [`appsettings.json`](appsettings.json).
@@ -69,7 +72,7 @@ the offending process rather than after a 90-second timeout. If something else o
 this sample instead of killing it:
 
 ```powershell
-pwsh .\03-MultipleDestinations\verify.ps1 -ApiPort 5013 -ReceiverAPort 5111 -ReceiverBPort 5112
+pwsh .\03-MultipleDestinations\verify.ps1 -ApiPort 5013 -ReceiverAPort 5121 -ReceiverBPort 5122
 ```
 
 To run by hand, use three terminals. Build once first — two of these run the *same* project, and
@@ -82,12 +85,12 @@ dotnet build 03-MultipleDestinations
 
 ```powershell
 # Terminal 1
-dotnet run --no-build --project shared\Outbox.Samples.Receiver --urls http://localhost:5101
+dotnet run --no-build --project shared\Outbox.Samples.Receiver --urls http://localhost:5111
 ```
 
 ```powershell
 # Terminal 2
-dotnet run --no-build --project shared\Outbox.Samples.Receiver --urls http://localhost:5102
+dotnet run --no-build --project shared\Outbox.Samples.Receiver --urls http://localhost:5112
 ```
 
 ```powershell
@@ -167,7 +170,7 @@ dbug: DNV.Outbox.Hosting.OutboxDeliveryProcessor[3001]
 The file destination finishes first because it never leaves the machine. Delivery order is not
 guaranteed and must not be relied on.
 
-`GET http://localhost:5101/deliveries` and `:5102/deliveries` each return their own row. Same
+`GET http://localhost:5111/deliveries` and `:5112/deliveries` each return their own row. Same
 `eventId`, same `traceParent`, same body — different `outboxId` and `destination`:
 
 ```json
@@ -302,7 +305,7 @@ An `OutboxValidationException` at startup: a name was registered twice.
 `AddHttpDestination(name, ...)` already registers the name, so an additional
 `AddDestination("receiver-a")` is a duplicate rather than a refinement.
 
-**`Timed out waiting for http://localhost:5102/health` on the second receiver only**
+**`Timed out waiting for http://localhost:5112/health` on the second receiver only**
 Two `dotnet run` invocations of the same project race on the build output; one of them loses.
 Build once first, then start both with `--no-build`, as `verify.ps1` does.
 

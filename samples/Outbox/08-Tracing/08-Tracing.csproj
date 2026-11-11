@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.Tracing</RootNamespace>
+    <AssemblyName>Outbox.Samples.Tracing</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\SqlServer\DNV.Outbox.SqlServer.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Http\DNV.Outbox.Http.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+  </ItemGroup>
+
+  <!--
+    OpenTelemetry is the only thing that distinguishes this sample from sample 01. The library
+    itself takes no dependency on it: it publishes a plain System.Diagnostics.ActivitySource named
+    "DNV.Outbox", which any listener can subscribe to.
+  -->
+  <ItemGroup>
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.20.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.20.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.2" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.20.2" />
+  </ItemGroup>
+
+</Project>

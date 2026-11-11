@@ -54,6 +54,9 @@ Create the database. The schema itself is created by the application at startup.
 sqlcmd -S .\SQLEXPRESS -E -Q "IF DB_ID('OutboxSample05') IS NULL CREATE DATABASE OutboxSample05;"
 ```
 
+The `verify.ps1` smoke test creates this database itself if it is missing, so this step is only
+needed when running the sample by hand.
+
 If `sqlcmd` is not on your `PATH` it ships with the ODBC client tools, typically at
 `C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\sqlcmd.exe`.
 

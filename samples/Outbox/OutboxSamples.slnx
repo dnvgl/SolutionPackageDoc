@@ -18,5 +18,6 @@
   <Project Path="04-RetryAndDeadLetter/04-RetryAndDeadLetter.csproj" />
   <Project Path="05-MultiNodeDispatcher/05-MultiNodeDispatcher.csproj" />
   <Project Path="06-CosmosDb/06-CosmosDb.csproj" />
+  <Project Path="08-Tracing/08-Tracing.csproj" />
 
 </Solution>

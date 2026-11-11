@@ -133,11 +133,26 @@ Re-run this script once 'docker ps' lists dapr_redis as Up.
 
     Write-Host 'Checking SQL Server...' -ForegroundColor Cyan
     try {
-        $connection = New-Object System.Data.SqlClient.SqlConnection $connectionString
-        $connection.Open()
-        $connection.Close()
+        # Connect to master rather than to the sample database: on a clean machine the sample
+        # database does not exist yet, and connecting to it would fail with "Cannot open database".
+        # Create it if it is missing - the outbox schema inside it is created by the sample at
+        # startup, so an empty database is all that is needed.
+        $builder = New-Object System.Data.SqlClient.SqlConnectionStringBuilder $connectionString
+        $database = $builder.get_InitialCatalog()
+        if ($database -notmatch '^OutboxSample\d+$') { throw "Unexpected database name '$database'." }
+        $builder.set_InitialCatalog('master')
+
+        $master = New-Object System.Data.SqlClient.SqlConnection $builder.ConnectionString
+        $master.Open()
+        try {
+            $command = $master.CreateCommand()
+            $command.CommandText = "IF DB_ID('$database') IS NULL CREATE DATABASE [$database];"
+            $command.ExecuteNonQuery() | Out-Null
+        } finally {
+            $master.Close()
+        }
     } catch {
-        throw "Cannot reach SQL Server using '$connectionString'. Start SQL Server and create the database (see README Setup), or set OUTBOX_SAMPLES_SQL to a reachable instance. Underlying error: $($_.Exception.Message)"
+        throw "Cannot reach SQL Server using '$connectionString'. Start SQL Server, or set OUTBOX_SAMPLES_SQL to a reachable instance. Underlying error: $($_.Exception.Message)"
     }
 
     # ---- Build before running, because `dapr run` starts both apps at once. -------------------

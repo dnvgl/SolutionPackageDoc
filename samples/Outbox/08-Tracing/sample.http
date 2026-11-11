@@ -1,0 +1,40 @@
+### Place an order carrying a trace. The same trace id turns up at the receiver seconds later.
+###
+### If the id below is NOT the one you see in the database, your HTTP client is injecting its own
+### traceparent alongside this one. Two traceparent headers are unparseable, so ASP.NET Core drops
+### both and starts a new root trace. Send `GET /trace` from the same client: if
+### incomingTraceParentCount is 2, that is the cause. See README section 7.
+POST http://localhost:5008/orders
+Content-Type: application/json
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+
+{ "tenantId": "acme", "customerId": "cust-ambient", "total": 42.00 }
+
+### Override the ambient trace with an explicit one. Both are sent; the explicit one wins.
+POST http://localhost:5008/orders
+Content-Type: application/json
+traceparent: 00-11111111111111111111111111111111-2222222222222222-01
+
+{
+  "tenantId": "acme",
+  "customerId": "cust-explicit",
+  "total": 7.00,
+  "traceParent": "00-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbb-01"
+}
+
+### Place an order with no trace at all. ASP.NET Core still starts a root trace, so traceParent
+### comes back populated - with a brand new trace id rather than null.
+POST http://localhost:5008/orders
+Content-Type: application/json
+
+{ "tenantId": "acme", "customerId": "cust-untraced", "total": 1.00 }
+
+### Inspect the persisted trace context.
+GET http://localhost:5008/outbox/00000000-0000-0000-0000-000000000000
+
+### The trace the current request belongs to.
+GET http://localhost:5008/trace
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+
+### What the receiver saw, traceparent header included.
+GET http://localhost:5100/deliveries

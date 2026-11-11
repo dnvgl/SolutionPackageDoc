@@ -47,6 +47,9 @@ $server = $env:OUTBOX_SAMPLES_SQL ?? '.\SQLEXPRESS'
 sqlcmd -S $server -Q "IF DB_ID('OutboxSample04') IS NULL CREATE DATABASE OutboxSample04;"
 ```
 
+The `verify.ps1` smoke test creates this database itself if it is missing, so this step is only
+needed when running the sample by hand.
+
 ## 5. Run
 
 The smoke test drives all three phases and asserts each one:
