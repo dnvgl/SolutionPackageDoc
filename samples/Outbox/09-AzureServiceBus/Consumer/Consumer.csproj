@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Outbox.Samples.AzureServiceBus.Consumer</RootNamespace>
+    <AssemblyName>Outbox.Samples.AzureServiceBus.Consumer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      No outbox reference at all. A consumer is an ordinary Service Bus client: the outbox is a
+      producer-side concern, and nothing about it reaches the wire beyond the identifiers the
+      publisher chose to stamp on the message.
+    -->
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.4" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

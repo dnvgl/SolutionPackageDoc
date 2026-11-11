@@ -12,6 +12,12 @@
     <Project Path="07-Dapr/Publisher/Publisher.csproj" />
     <Project Path="07-Dapr/Subscriber/Subscriber.csproj" />
   </Folder>
+  <Folder Name="/09-AzureServiceBus/">
+    <File Path="09-AzureServiceBus/README.md" />
+    <File Path="09-AzureServiceBus/sample.http" />
+    <Project Path="09-AzureServiceBus/Consumer/Consumer.csproj" />
+    <Project Path="09-AzureServiceBus/Publisher/Publisher.csproj" />
+  </Folder>
   <Project Path="01-SqlServer-Http/01-SqlServer-Http.csproj" />
   <Project Path="02-EntityFrameworkCore/02-EntityFrameworkCore.csproj" />
   <Project Path="03-MultipleDestinations/03-MultipleDestinations.csproj" />

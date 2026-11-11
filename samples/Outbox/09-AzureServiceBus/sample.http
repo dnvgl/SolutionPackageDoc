@@ -1,0 +1,58 @@
+### Sample 09 - Azure Service Bus
+###
+### Prerequisites: infra\provision.ps1 has been run, the Publisher is listening on
+### http://localhost:5009, and the Consumer is running in another terminal.
+###
+### NOTE: some HTTP clients built on .NET's HttpClient (including the Visual Studio .http runner)
+### append their own traceparent header. See sample 08 for why that matters.
+
+@publisher = http://localhost:5009
+
+### Index - confirms which namespace and queue this instance is wired to.
+GET {{publisher}}/
+
+### Health probe.
+GET {{publisher}}/health
+
+### 1. Place an order.
+### The order row and its outbox record commit together in one local SQL transaction. Nothing has
+### reached Service Bus yet. Copy "outboxId" from the response into @outboxId below.
+POST {{publisher}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "dnv-maritime",
+  "customerId": "cust-9001",
+  "total": 1499.50
+}
+
+### Paste the outboxId from the response above.
+@outboxId = 01A1C992-7F6A-7003-A69E-45280DCED616
+
+### 2. Inspect the record. Within a few seconds status becomes "Delivered" and attemptCount is 1.
+GET {{publisher}}/outbox/{{outboxId}}
+
+### 3. Resend the SAME record. This replays the identical MessageId, which is exactly what the
+### dispatcher does when a send succeeds but its acknowledgement is lost.
+###
+### Watch the Consumer terminal: it does NOT print a second RECEIVED block. The broker accepted
+### the message and silently discarded it, because duplicate detection is keyed on MessageId and
+### the window is 10 minutes.
+POST {{publisher}}/outbox/{{outboxId}}/resend
+
+### 4. Run it again. Still no new message at the consumer.
+POST {{publisher}}/outbox/{{outboxId}}/resend
+
+### 5. Place a different order to prove the queue is still live and the consumer is not stuck.
+### This one has a new outbox id, so it is not a duplicate and it arrives immediately.
+POST {{publisher}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "dnv-energy",
+  "customerId": "cust-9002",
+  "total": 275.00
+}
+
+### 6. Counters. delivered should equal the number of orders placed - resends do not create records.
+GET {{publisher}}/outbox/stats
