@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Outbox.Samples.ScaleOut.Verifier</RootNamespace>
+    <AssemblyName>Outbox.Samples.ScaleOut.Verifier</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      No outbox reference anywhere. The verifier is a plain Service Bus consumer, so what it
+      counts is what the broker actually received - not what the library believes it sent.
+    -->
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.4" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

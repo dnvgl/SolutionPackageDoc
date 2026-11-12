@@ -1,0 +1,70 @@
+### Sample 10 - Container Apps scale-out
+###
+### Replace @app with the FQDN deploy.ps1 printed.
+###
+### The proof in this sample is NOT in the responses below - it is in the Verifier terminal and
+### in Log Analytics. Keep the verifier running while you work through this file:
+###
+###   cd Verifier
+###   dotnet run --drain true          # empty the subscription first
+###   dotnet run --idle 45 --expect 100
+
+@app = https://ca-outbox-scaleout.grayriver-342fc9fb.southeastasia.azurecontainerapps.io
+
+### 1. Which replica answered? Send this a few times - ingress round-robins between replicas.
+### This proves the ingress is balanced. It does NOT prove both dispatchers are working;
+### README section 6 has the Log Analytics query that does.
+GET {{app}}/node
+
+### 2. One order. Note the outboxId in the response.
+POST {{app}}/orders
+Content-Type: application/json
+
+{
+  "tenantId": "dnv-energy",
+  "customerId": "cust-1001",
+  "total": 149.50
+}
+
+### 3. Inspect it. Within a few seconds status is Delivered and attemptCount is 1.
+### claimOwner is null - CompleteAsync clears it, so a delivered row does not remember
+### which replica sent it.
+GET {{app}}/outbox/01a1ceef-f884-79ae-a470-5921378c393e
+
+### 4. The burst. 100 orders through one request, returning all 100 outbox ids.
+### The verifier must report: 100 received, 100 distinct, 0 duplicated.
+POST {{app}}/orders/bulk?count=100
+
+### 5. Counters. delivered grows by 100; pending and failed return to 0.
+GET {{app}}/outbox/stats
+
+### 6. Prove the verifier can actually fail.
+###
+### Start a fresh verifier (dotnet run --idle 30), then send this twice with the SAME id.
+### /resend calls the destination's SendAsync with the stored record - byte for byte what the
+### dispatcher does on a retry. The scaleout-events topic has duplicate detection switched OFF
+### on purpose, so both replays arrive and the verifier reports:
+###
+###   messages received : 2
+###   distinct ids      : 1
+###   duplicated ids    : 1
+###   FAIL - the same outbox record was delivered more than once.
+POST {{app}}/outbox/01a1ceef-f884-79ae-a470-5921378c393e/resend
+
+### 7. Again. Same id, same result - the duplicate count goes to 2.
+POST {{app}}/outbox/01a1ceef-f884-79ae-a470-5921378c393e/resend
+
+### 8. The kill test. Run the verifier with --idle 90 (NOT 45), fire this, then restart the
+### revision from PowerShell while it is still dispatching:
+###
+###   $rev = az containerapp show -g rg-outbox-samples -n ca-outbox-scaleout `
+###       --only-show-errors --query properties.latestRevisionName -o tsv
+###   az containerapp revision restart -g rg-outbox-samples -n ca-outbox-scaleout `
+###       --revision $rev --only-show-errors
+###
+### Still 100 received, 100 distinct, 0 duplicated. The 90-second window matters: rows claimed
+### by the dead replica are invisible to the survivor until the 60-second claim expires.
+POST {{app}}/orders/bulk?count=100
+
+### 9. Index.
+GET {{app}}/

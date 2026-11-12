@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Outbox.Samples.ScaleOut.App</RootNamespace>
+    <AssemblyName>Outbox.Samples.ScaleOut.App</AssemblyName>
+
+    <!--
+      Built with `dotnet publish /t:PublishContainer`, which produces an image from the publish
+      output with no Dockerfile. The base image is pinned because the default for a web project
+      follows the SDK and should not drift underneath a sample.
+    -->
+    <EnableSdkContainerSupport>true</EnableSdkContainerSupport>
+    <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:10.0</ContainerBaseImage>
+    <ContainerRepository>outbox-scaleout</ContainerRepository>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Entra authentication for Azure SQL.
+
+      Microsoft.Data.SqlClient 7 moved the Active Directory authentication providers out of the
+      main package. Without this reference, `Authentication=Active Directory Managed Identity`
+      parses happily and then throws at connect time with "Cannot find an authentication provider
+      for 'ActiveDirectoryManagedIdentity'". The version tracks the SqlClient version the library
+      pins, because the two ship together.
+    -->
+    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" Version="7.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Outbox.Samples.Domain\Outbox.Samples.Domain.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\SqlServer\DNV.Outbox.SqlServer.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Dapr\DNV.Outbox.Dapr.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\Hosting\DNV.Outbox.Hosting.csproj" />
+    <ProjectReference Include="$(OutboxSrc)\..\Dapr\PubSub\DNV.Dapr.PubSub.csproj" />
+  </ItemGroup>
+
+</Project>

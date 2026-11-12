@@ -18,6 +18,13 @@
     <Project Path="09-AzureServiceBus/Consumer/Consumer.csproj" />
     <Project Path="09-AzureServiceBus/Publisher/Publisher.csproj" />
   </Folder>
+  <Folder Name="/10-ContainerApps-Scaleout/">
+    <File Path="10-ContainerApps-Scaleout/README.md" />
+    <File Path="10-ContainerApps-Scaleout/deploy.ps1" />
+    <File Path="10-ContainerApps-Scaleout/sample.http" />
+    <Project Path="10-ContainerApps-Scaleout/App/App.csproj" />
+    <Project Path="10-ContainerApps-Scaleout/Verifier/Verifier.csproj" />
+  </Folder>
   <Project Path="01-SqlServer-Http/01-SqlServer-Http.csproj" />
   <Project Path="02-EntityFrameworkCore/02-EntityFrameworkCore.csproj" />
   <Project Path="03-MultipleDestinations/03-MultipleDestinations.csproj" />
